@@ -1,0 +1,11 @@
+xosd: XOSD (A library for displaying a TV-like on-screen display in X)
+xosd:
+xosd: The XOSD library aims on displaying text on the screen. The text is
+xoad: unmanaged, shaped and appears transparent. This gives the effect of
+xosd: an On Screen Display, like from a TV/VCR etc.
+xosd:
+xosd:
+xosd:
+xosd:
+xosd:
+xosd: Packaged by Georgi D. Sotirov <gdsotirov@dir.bg>
