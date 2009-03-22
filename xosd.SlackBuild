@@ -7,7 +7,7 @@
 . ../slack-package.conf
 
 NAME=xosd
-VERSION=2.2.12
+VERSION=2.2.14
 BUILD=1
 ARCH=${ARCH:-i486}
 
