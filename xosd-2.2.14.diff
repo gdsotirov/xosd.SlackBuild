@@ -1,0 +1,106 @@
+# Enable usage of pkg-config instead of gtk-config and gdk-pixbuf-config
+
+diff -N -r -U 3 xosd-2.2.14-orig/configure xosd-2.2.14/configure
+--- xosd-2.2.14-orig/configure	2004-11-17 21:30:24.000000000 +0200
++++ xosd-2.2.14/configure	2010-09-11 20:39:59.000000000 +0300
+@@ -20742,7 +20742,7 @@
+ echo "${ECHO_T}no" >&6
+ fi
+ 
+-  min_gtk_version=1.2.2
++  min_gtk_version=2.20.0
+   echo "$as_me:$LINENO: checking for GTK - version >= $min_gtk_version" >&5
+ echo $ECHO_N "checking for GTK - version >= $min_gtk_version... $ECHO_C" >&6
+   no_gtk=""
+@@ -20751,11 +20751,11 @@
+   else
+     GTK_CFLAGS=`$GTK_CONFIG $gtk_config_args --cflags`
+     GTK_LIBS=`$GTK_CONFIG $gtk_config_args --libs`
+-    gtk_config_major_version=`$GTK_CONFIG $gtk_config_args --version | \
++    gtk_config_major_version=`$GTK_CONFIG $gtk_config_args --modversion | \
+            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
+-    gtk_config_minor_version=`$GTK_CONFIG $gtk_config_args --version | \
++    gtk_config_minor_version=`$GTK_CONFIG $gtk_config_args --modversion | \
+            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
+-    gtk_config_micro_version=`$GTK_CONFIG $gtk_config_args --version | \
++    gtk_config_micro_version=`$GTK_CONFIG $gtk_config_args --modversion | \
+            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
+     if test "x$enable_gtktest" = "xyes" ; then
+       ac_save_CFLAGS="$CFLAGS"
+@@ -22455,7 +22455,7 @@
+ echo "${ECHO_T}no" >&6
+ fi
+ 
+-  min_gdk_pixbuf_version=0.22.0
++  min_gdk_pixbuf_version=2.20.0
+   echo "$as_me:$LINENO: checking for GDK_PIXBUF - version >= $min_gdk_pixbuf_version" >&5
+ echo $ECHO_N "checking for GDK_PIXBUF - version >= $min_gdk_pixbuf_version... $ECHO_C" >&6
+   no_gdk_pixbuf=""
+@@ -22465,11 +22465,11 @@
+     GDK_PIXBUF_CFLAGS=`$GDK_PIXBUF_CONFIG $gdk_pixbufconf_args --cflags`
+     GDK_PIXBUF_LIBS=`$GDK_PIXBUF_CONFIG $gdk_pixbufconf_args --libs`
+ 
+-    gdk_pixbuf_major_version=`$GDK_PIXBUF_CONFIG $gdk_pixbuf_args --version | \
++    gdk_pixbuf_major_version=`$GDK_PIXBUF_CONFIG $gdk_pixbuf_args --modversion | \
+            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
+-    gdk_pixbuf_minor_version=`$GDK_PIXBUF_CONFIG $gdk_pixbuf_args --version | \
++    gdk_pixbuf_minor_version=`$GDK_PIXBUF_CONFIG $gdk_pixbuf_args --modversion | \
+            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
+-    gdk_pixbuf_micro_version=`$GDK_PIXBUF_CONFIG $gdk_pixbuf_config_args --version | \
++    gdk_pixbuf_micro_version=`$GDK_PIXBUF_CONFIG $gdk_pixbuf_args --modversion | \
+            sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
+     if test "x$enable_gdk_pixbuftest" = "xyes" ; then
+       ac_save_CFLAGS="$CFLAGS"
+
+# Do not use XMMS_CFLAGS as they include GTK1
+
+diff -N -r -U 3 xosd-2.2.14-orig/src/xmms_plugin/Makefile.in xosd-2.2.14/src/xmms_plugin/Makefile.in
+--- xosd-2.2.14-orig/src/xmms_plugin/Makefile.in	2004-11-17 21:30:23.000000000 +0200
++++ xosd-2.2.14/src/xmms_plugin/Makefile.in	2010-09-11 20:40:12.000000000 +0300
+@@ -223,7 +223,7 @@
+ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+-AM_CFLAGS = @XMMS_CFLAGS@ @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@ \
++AM_CFLAGS = @GTK_CFLAGS@ @GDK_PIXBUF_CFLAGS@ \
+ 	-I$(top_srcdir)/src -DXMMS_PIXMAPDIR=\"$(XMMS_PIXMAPDIR)\"
+ 
+ xmmsplugindir = @XMMS_PLUGIN_DIR@
+
+# Fix compilation errors with GTK2 and GDK-Pixbuf2
+
+diff -N -r -U 3 xosd-2.2.14-orig/src/xmms_plugin/dlg_config.c xosd-2.2.14/src/xmms_plugin/dlg_config.c
+--- xosd-2.2.14-orig/src/xmms_plugin/dlg_config.c	2004-08-20 01:39:32.000000000 +0300
++++ xosd-2.2.14/src/xmms_plugin/dlg_config.c	2010-09-11 20:39:59.000000000 +0300
+@@ -182,6 +182,7 @@
+   GdkPixmap *icon_pixmap = NULL;
+   GdkBitmap *icon_mask = NULL;
+   GtkWidget *icon_widget = NULL;
++  GError    *gerror = NULL;
+ 
+   DEBUG("creating icons...");
+ 
+@@ -211,7 +212,13 @@
+       DEBUG("Icon file name %s", icon_file_name);
+ 
+       // Load the file, render it, and create the widget.
+-      icon_pixbuf = gdk_pixbuf_new_from_file(icon_file_name);
++      icon_pixbuf = gdk_pixbuf_new_from_file(icon_file_name, &gerror);
++      if (icon_pixbuf == NULL) {
++        DEBUG("GdkPixbuf: %s", gerror->message);
++        perror("GdkPixbuf error");
++        exit(20434);
++      }
++
+       gdk_pixbuf_render_pixmap_and_mask(icon_pixbuf,
+                                         &icon_pixmap, &icon_mask, 128);
+       icon_widget = gtk_pixmap_new(icon_pixmap, icon_mask);
+@@ -278,7 +285,7 @@
+ 
+   read_config();
+ 
+-  configure_win = gtk_window_new(GTK_WINDOW_DIALOG);
++  configure_win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+ 
+   gtk_signal_connect(GTK_OBJECT(configure_win), "destroy",
+                      GTK_SIGNAL_FUNC(gtk_widget_destroyed), &configure_win);
